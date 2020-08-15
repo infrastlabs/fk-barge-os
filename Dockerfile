@@ -4,6 +4,13 @@ ENV TERM=xterm \
     SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
     SYSLINUX_VERSION=4.05+dfsg-6+deb8u1
 
+RUN domain="mirrors.aliyun.com" \
+ && echo "deb http://$domain/ubuntu xenial main restricted universe multiverse" > /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu xenial-security main restricted universe multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu xenial-updates main restricted universe multiverse">> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu xenial-backports main restricted universe multiverse">> /etc/apt/sources.list
+
+
 RUN apt-get -q update && \
     apt-get -q -y install --no-install-recommends ca-certificates \
       bc build-essential cpio file git python unzip rsync wget \
@@ -41,13 +48,13 @@ RUN mkdir -p etc/ssl/certs && \
     cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
 
 # Add bash-completion
-RUN mkdir -p usr/share/bash-completion/completions && \
-    wget -qO usr/share/bash-completion/bash_completion https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
-    chmod +x usr/share/bash-completion/bash_completion
+# RUN mkdir -p usr/share/bash-completion/completions && \
+#     wget -qO usr/share/bash-completion/bash_completion https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
+#     chmod +x usr/share/bash-completion/bash_completion
 
 # Add Docker bash-completion
 ENV DOCKER_VERSION 1.10.3
-RUN wget -qO usr/share/bash-completion/completions/docker https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
+# RUN wget -qO usr/share/bash-completion/completions/docker https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
 
 # Add dumb-init
 ENV DINIT_VERSION 1.2.2
@@ -68,9 +75,9 @@ RUN mkdir -p etc && \
     echo "BUG_REPORT_URL=\"https://github.com/bargees/barge-os/issues\"" >> etc/os-release
 
 # Add Package Installer
-RUN mkdir -p usr/bin && \
-    wget -qO usr/bin/pkg https://raw.githubusercontent.com/bargees/barge-pkg/master/pkg && \
-    chmod +x usr/bin/pkg
+# RUN mkdir -p usr/bin && \
+#     wget -qO usr/bin/pkg https://raw.githubusercontent.com/bargees/barge-pkg/master/pkg && \
+#     chmod +x usr/bin/pkg
 
 # Copy config files
 COPY configs ${SRC_DIR}/configs
