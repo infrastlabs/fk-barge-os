@@ -13,7 +13,7 @@ RUN domain="mirrors.aliyun.com" \
 
 RUN apt-get -q update && \
     apt-get -q -y install --no-install-recommends ca-certificates \
-      bc build-essential cpio file git python unzip rsync wget \
+      bc build-essential cpio file git python unzip rsync wget curl \
       syslinux syslinux-common isolinux xorriso dosfstools mtools && \
     wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
     wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
@@ -30,7 +30,11 @@ ENV SRC_DIR=/build \
 RUN mkdir -p ${SRC_DIR} ${OVERLAY}
 
 ENV BR_VERSION 2019.08
-RUN wget -qO- https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2 | tar xj && \
+# ERROR: The certificate of 'buildroot.org' has expired.
+# RUN wget -qO- https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2 | tar xj && \
+#     mv buildroot-${BR_VERSION} ${BR_ROOT}
+RUN curl -O -fSL -k  https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2
+RUN tar -jxf buildroot-${BR_VERSION}.tar.bz2; \
     mv buildroot-${BR_VERSION} ${BR_ROOT}
 
 # Apply patches
@@ -48,18 +52,18 @@ RUN mkdir -p etc/ssl/certs && \
     cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
 
 # Add bash-completion
-# RUN mkdir -p usr/share/bash-completion/completions && \
-#     wget -qO usr/share/bash-completion/bash_completion https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
-#     chmod +x usr/share/bash-completion/bash_completion
+RUN mkdir -p usr/share/bash-completion/completions && \
+    wget -qO usr/share/bash-completion/bash_completion https://ghproxy.com/https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
+    chmod +x usr/share/bash-completion/bash_completion
 
 # Add Docker bash-completion
 ENV DOCKER_VERSION 1.10.3
-# RUN wget -qO usr/share/bash-completion/completions/docker https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
+RUN wget -qO usr/share/bash-completion/completions/docker https://ghproxy.com/https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
 
 # Add dumb-init
 ENV DINIT_VERSION 1.2.2
 RUN mkdir -p usr/bin && \
-    wget -qO usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v${DINIT_VERSION}/dumb-init_${DINIT_VERSION}_amd64 && \
+    wget -qO usr/bin/dumb-init https://ghproxy.com/https://github.com/Yelp/dumb-init/releases/download/v${DINIT_VERSION}/dumb-init_${DINIT_VERSION}_amd64 && \
     chmod +x usr/bin/dumb-init
 
 ENV VERSION 2.14.0-rc2
