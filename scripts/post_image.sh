@@ -31,6 +31,7 @@ xorriso \
   -isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin \
   -no-pad -o ${IMAGES}/barge.iso $(pwd)
 
+function makeBargeDiskImage() {
 # Make a bootable disk image
 IMAGE=${IMAGES}/barge.img
 DISK=${IMAGES}/disk
@@ -69,3 +70,6 @@ losetup -d /dev/loop0
 if [ -s ${IMAGES}/error.log ]; then
   exit 1
 fi
+}
+# gitac err: losetup: /build/buildroot/output/images/barge.iso: failed to set up loop device: Device or resource busy
+# makeBargeDiskImage
