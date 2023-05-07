@@ -1,0 +1,18 @@
+# https://github.com/huapox/barge-os/blob/master/aliyun/Dockerfile.2-bin
+##build on baseEnv: 45 seconds save;
+FROM registry.cn-shenzhen.aliyuncs.com/sam-ns1/barge-os:src as src
+ENV BR_ROOT=/build/buildroot
+WORKDIR ${BR_ROOT}
+RUN sh /build/scripts/build.sh
+RUN du -sh /build/buildroot/output/*
+
+
+##copy dist file: lite images size;
+FROM infrastlabs/alpine-ext
+USER root
+##data.tar.gz trafix.helm
+COPY --from=src /build/buildroot/output/images /output
+
+##run as root
+USER root
+WORKDIR /

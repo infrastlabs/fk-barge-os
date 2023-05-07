@@ -1,0 +1,10 @@
+FROM alpine:3.13.12
+
+# mnt_data_dl,cache tarpack to ./output
+COPY ./output /output
+
+# gitac: cp failed, dind?
+# # Step 3/4 : COPY /mnt/data/dl /output/mnt_data_dl
+# # COPY failed: file not found in build context or excluded by .dockerignore: stat mnt/data/dl: file does not exist
+# COPY /mnt/data/dl /output/mnt_data_dl
+# COPY /mnt/data/ccache /output/mnt_data_ccache
