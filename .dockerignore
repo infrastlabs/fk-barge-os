@@ -7,7 +7,7 @@
 
 contrib/
 docs/
-output/
+# output/
 LICENSE
 Makefile
 README.md
