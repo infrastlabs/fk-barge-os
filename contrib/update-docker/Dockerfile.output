@@ -1,0 +1,4 @@
+FROM registry.cn-shenzhen.aliyuncs.com/infrasync/alpine:3.13.12
+
+COPY ./barge-x.iso /output/barge-x.iso
+
