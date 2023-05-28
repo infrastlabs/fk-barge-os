@@ -1,6 +1,8 @@
 BARGE_VERSION  := 2.12.0
 DOCKER_CHANNEL := stable
-DOCKER_VERSION := 18.09.3
+#18.09.3 19.03.15 17.12.1-ce
+# v2.9.0-x: 18.03.1-ce
+DOCKER_VERSION := 17.12.1-ce
 
 ISO_NAME := barge-x.iso
 
@@ -13,16 +15,18 @@ $(ISO_NAME): Dockerfile docker $(EXTERNAL_DEPENDENCIES)
 	docker run --rm barge-x > $@
 
 bzImage rootfs.tar.xz:
-	curl -L https://github.com/bargees/barge-os/releases/download/$(BARGE_VERSION)/$(@F) -o $@
+	# curl -L https://ghproxy.com/https://github.com/bargees/barge-os/releases/download/$(BARGE_VERSION)/$(@F) -o $@
+	docker pull registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest
+	docker  run -it --rm -v $(shell pwd):/mnt registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest sh -c "\cp -a /output/$(@F) /mnt/"
 
 isolinux.cfg:
-	curl -L https://raw.githubusercontent.com/bargees/barge-os/$(BARGE_VERSION)/configs/$(@F) -o $@
+	curl -L https://ghproxy.com/https://raw.githubusercontent.com/bargees/barge-os/$(BARGE_VERSION)/configs/$(@F) -o $@
 
 docker.tgz:
 	curl -L https://download.docker.com/linux/static/$(DOCKER_CHANNEL)/x86_64/docker-$(DOCKER_VERSION).tgz -o $@
 
 docker.bash-completion:
-	curl -L https://raw.githubusercontent.com/docker/docker-ce/v$(DOCKER_VERSION)/components/cli/contrib/completion/bash/docker -o $@
+	curl -L https://ghproxy.com/https://raw.githubusercontent.com/docker/docker-ce/v$(DOCKER_VERSION)/components/cli/contrib/completion/bash/docker -o $@
 
 clean:
 	$(RM) $(EXTERNAL_DEPENDENCIES)
