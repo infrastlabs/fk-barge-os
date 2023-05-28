@@ -1,4 +1,5 @@
-FROM ailispaw/ubuntu-essential:14.04-nodoc
+# FROM ailispaw/ubuntu-essential:14.04-nodoc
+FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
 
 RUN apt-get -q update && \
     apt-get -q -y install --no-install-recommends cpio xz-utils syslinux xorriso && \
