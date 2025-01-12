@@ -1,3 +1,53 @@
+
+## 25.01
+
+**deps**
+
+- https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion
+- https://raw.githubusercontent.com/moby/moby/v1.10.3/contrib/completion/bash/docker #`v17.12.1-ce: 404`
+  - https://raw.githubusercontent.com/docker/docker-ce/v17.12.1-ce/components/cli/contrib/completion/bash/docker `contrib/update-docker/Makefile`
+- https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64 #`arm64`
+- https://raw.githubusercontent.com/bargees/barge-pkg/master/pkg
+
+```bash
+# MAKE;  25.1.11 9:57..10:24, 27min@genMachine 5700U
+# make
+xorriso : NOTE : Copying to System Area: 432 bytes from file '/usr/lib/syslinux/isohdpfx.bin'
+libisofs: NOTE : Aligned image size to cylinder size by 401 blocks
+ISO image produced: 7168 sectors
+Written to medium : 7168 sectors at LBA 0
+Writing to 'stdio:/build/buildroot/output/images/barge.iso' completed successfully.
+
+docker cp barge-built:/build/buildroot/output/images/rootfs.tar.xz output/
+docker cp barge-built:/build/buildroot/output/images/bzImage output/
+docker cp barge-built:/build/buildroot/output/images/barge.iso output/
+
+# VIEW
+root @ deb1013 in .../_ee/fk-barge-os |10:24:44  |sam-custom ✓| 
+$ ls -lh output/
+total 28M
+-rw-r--r-- 1 root root  14M Jan 12 10:24 barge.iso
+-rw-r--r-- 1 root root 2.7M Jan 12 10:23 bzImage
+-rw-r--r-- 1 root root  11M Jan 12 10:23 rootfs.tar.xz
+
+# contrib/update-docker/Makefile ##载入dockerd/docker??
+
+
+# MAKE2 -kernelUp
+# make
+docker cp barge-built:/build/buildroot/output/images/rootfs.tar.xz output/
+docker cp barge-built:/build/buildroot/output/images/bzImage output/
+docker cp barge-built:/build/buildroot/output/images/barge.iso output/
+
+real    17m26.984s
+user    0m1.229s
+sys     0m1.080s
+
+```
+
+
+## 23.05
+
 **Flow**
 
 - gitac:
