@@ -55,17 +55,21 @@ RUN mkdir -p etc/ssl/certs && \
 
 # Add bash-completion
 RUN mkdir -p usr/share/bash-completion/completions && \
-    wget -qO usr/share/bash-completion/bash_completion https://ghproxy.com/https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
+    #wget -qO usr/share/bash-completion/bash_completion https://raw.githubusercontent.com/scop/bash-completion/master/bash_completion && \
+    wget -qO usr/share/bash-completion/bash_completion https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/bash_completion && \
     chmod +x usr/share/bash-completion/bash_completion
 
 # Add Docker bash-completion
 ENV DOCKER_VERSION 1.10.3
-RUN wget -qO usr/share/bash-completion/completions/docker https://ghproxy.com/https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
+RUN \
+  #wget -qO usr/share/bash-completion/completions/docker https://raw.githubusercontent.com/moby/moby/v${DOCKER_VERSION}/contrib/completion/bash/docker
+  wget -qO usr/share/bash-completion/completions/docker https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/completion_docker_v1.10.3
 
 # Add dumb-init
 ENV DINIT_VERSION 1.2.2
 RUN mkdir -p usr/bin && \
-    wget -qO usr/bin/dumb-init https://ghproxy.com/https://github.com/Yelp/dumb-init/releases/download/v${DINIT_VERSION}/dumb-init_${DINIT_VERSION}_amd64 && \
+    # wget -qO usr/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v${DINIT_VERSION}/dumb-init_${DINIT_VERSION}_amd64 && \
+    wget -qO usr/bin/dumb-init https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/dumb-init_1.2.2_amd64 && \
     chmod +x usr/bin/dumb-init
 
 ENV VERSION 2.14.0-rc2
@@ -82,7 +86,8 @@ RUN mkdir -p etc && \
 
 # Add Package Installer
 RUN mkdir -p usr/bin && \
-    wget -qO usr/bin/pkg https://ghproxy.com/https://raw.githubusercontent.com/bargees/barge-pkg/master/pkg && \
+    # wget -qO usr/bin/pkg https://raw.githubusercontent.com/bargees/barge-pkg/master/pkg && \
+    wget -qO usr/bin/pkg https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/barge_pkg && \
     chmod +x usr/bin/pkg
 
 # Copy config files
