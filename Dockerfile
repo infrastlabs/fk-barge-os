@@ -31,19 +31,29 @@ ENV SRC_DIR=/build \
     BR_ROOT=/build/buildroot
 RUN mkdir -p ${SRC_DIR} ${OVERLAY}
 
-ENV BR_VERSION 2019.08
+# ENV BR_VERSION 2019.08
 # ERROR: The certificate of 'buildroot.org' has expired.
 # RUN wget -qO- https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2 | tar xj && \
 #     mv buildroot-${BR_VERSION} ${BR_ROOT}
-RUN curl -O -fSL -k  https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2
-RUN tar -jxf buildroot-${BR_VERSION}.tar.bz2; \
+# RUN curl -O -fSL -k  https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.bz2
+# RUN tar -jxf buildroot-${BR_VERSION}.tar.bz2; \
+#     mv buildroot-${BR_VERSION} ${BR_ROOT}
+ENV BR_VERSION 2024.02.10
+#  https://buildroot.org/downloads/buildroot-2024.02.10.tar.xz
+#  https://buildroot.org/downloads/buildroot-2024.02.10.tar.gz  ##bz2: last @buildroot-2021.11-rc3.tar.bz2
+#   buildroot-2024.02.tar.gz	2024-Mar-05 14:52:59	7.0M	application/x-gtar-compressed
+#   buildroot-2024.02.tar.xz	2024-Mar-05 14:53:08	5.2M	application/x-xz
+#   buildroot-2024.02.10.tar.gz	2025-Jan-09 14:45:56	7.1M	application/x-gtar-compressed
+#   buildroot-2024.11.1.tar.xz	2025-Jan-09 15:53:07	5.4M	application/x-xz
+RUN curl -O -fSL -k  https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar.gz
+RUN tar -zxf buildroot-${BR_VERSION}.tar.gz; \
     mv buildroot-${BR_VERSION} ${BR_ROOT}
 
-# Apply patches
-COPY patches ${SRC_DIR}/patches
-RUN for patch in ${SRC_DIR}/patches/*.patch; do \
-      patch -p1 -d ${BR_ROOT} < ${patch}; \
-    done
+# # Apply patches
+# COPY patches ${SRC_DIR}/patches
+# RUN for patch in ${SRC_DIR}/patches/*.patch; do \
+#       patch -p1 -d ${BR_ROOT} < ${patch}; \
+#     done
 
 # Setup overlay
 COPY overlay ${OVERLAY}
