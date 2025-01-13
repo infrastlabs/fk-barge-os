@@ -48,6 +48,41 @@ total 1.9M
   cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
   ##@buildroot.config: BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox.config"
   ##@buildroot.config: BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="/build/configs/kernel.config"
+
+# output
+  root @ deb1013 in ~ |09:16:22  
+  $ docker pull registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501
+  v2501: Pulling from infrastlabs/barge-build-output
+  72cfd02ff4d0: Already exists 
+  ab4cae77f3d3: Downloading [======================================>            ]  828.8MB/1.066GB
+  root @ deb1013 in ~ |09:17:36  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501 sh
+  / # find output/
+  output/
+  output/bzImage
+  output/rootfs.tar.xz
+  output/brdata.tar.gz
+  output/barge.iso
+  / # ls -lh output/
+  total 1017M  
+  -rw-r--r--    1 root     root       48.0M Jan 13 23:49 barge.iso
+  -rw-r--r--    1 root     root      920.0M Jan 13 23:49 brdata.tar.gz
+  -rw-r--r--    1 root     root        3.1M Jan 13 23:45 bzImage
+  -rw-r--r--    1 root     root       45.5M Jan 13 23:47 rootfs.tar.xz  
+
+# GLIBC_2.38| usr/bin/localedef --force --quiet --no-archive --little-endian --prefix=${ROOTFS} -i POSIX -f UTF-8 C.UTF-8
+# /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found
+  root @ deb1013 in ~ |09:35:00  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-24.04 bash
+  root@7c18ee39dbea:/# pkgsize |grep libc
+  2.13 Mbs	libc-bin|2.39-0ubuntu8.3
+
+  root @ deb1013 in ~ |09:36:52  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-22.04 bash
+  root@7c99bbc7fb18:/# pkgsize |grep libc
+  2.48 Mbs	libc-bin ##22.04:无version!!
+  root@7c99bbc7fb18:/# dpkg -l |grep libc-bin
+  ii  libc-bin                      2.35-0ubuntu3.8                         amd64        GNU C Library: Binaries
 ```
 
 **configs**
