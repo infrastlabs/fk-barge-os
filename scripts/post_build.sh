@@ -135,11 +135,14 @@ STRIP=${GNU_TARGET_NAME}-strip
 ${STRIP} --remove-section=.comment --remove-section=.note ${ROOTFS}/usr/bin/locale
 
 # Install C.UTF-8 locale
+# /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found
+set +e
 mkdir -p ${ROOTFS}/usr/lib/locale
 I18NPATH=${STAGING_DIR}/usr/share/i18n:/usr/share/i18n \
   ${STAGING_DIR}/usr/bin/localedef --force --quiet --no-archive --little-endian --prefix=${ROOTFS} \
     -i POSIX -f UTF-8 C.UTF-8
 mv ${ROOTFS}/usr/lib/locale/C.utf8 ${ROOTFS}/usr/lib/locale/C.UTF-8
+set -e
 
 # Set Docker version
 sed -i "s/Docker version.*/$(LD_LIBRARY_PATH=${ROOTFS}/usr/lib ${ROOTFS}/usr/bin/docker -v)/" ${ROOTFS}/etc/motd
