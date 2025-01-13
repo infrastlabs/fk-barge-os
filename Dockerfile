@@ -1,29 +1,35 @@
-# FROM ailispaw/ubuntu-essential:16.04-nodoc
-
-# ENV TERM=xterm \
-#     SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
-#     SYSLINUX_VERSION=4.05+dfsg-6+deb8u1
-
-# RUN domain="mirrors.aliyun.com" \
-#  && echo "deb http://$domain/ubuntu xenial main restricted universe multiverse" > /etc/apt/sources.list \
-#  && echo "deb http://$domain/ubuntu xenial-security main restricted universe multiverse" >> /etc/apt/sources.list \
-#  && echo "deb http://$domain/ubuntu xenial-updates main restricted universe multiverse">> /etc/apt/sources.list \
-#  && echo "deb http://$domain/ubuntu xenial-backports main restricted universe multiverse">> /etc/apt/sources.list
-
-
-# RUN apt-get -q update && \
-#     apt-get -q -y install --no-install-recommends ca-certificates \
-#       bc build-essential cpio file git python unzip rsync wget curl \
-#       syslinux syslinux-common isolinux xorriso dosfstools mtools && \
-#     wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-#     wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-#     dpkg -i "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-#     dpkg -i "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-#     rm -f "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-#     rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-#     apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
 FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest as brdata
-FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
+# FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
+# FROM ailispaw/ubuntu-essential:16.04-nodoc
+FROM ubuntu:22.04
+
+ENV TERM=xterm \
+    SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
+    SYSLINUX_VERSION=4.05+dfsg-6+deb8u1
+
+RUN \
+  #domain="mirrors.aliyun.com" \
+  domain="mirrors.ustc.edu.cn" \
+ && echo "deb http://$domain/ubuntu jammy main restricted universe multiverse" > /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu jammy-security main restricted universe multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu jammy-updates main restricted universe multiverse">> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu jammy-backports main restricted universe multiverse">> /etc/apt/sources.list
+
+# ubt16: gcc7?
+# ubt22: gcc-11 amd64 11.4.0-1ubuntu1~22.04 [20.1 MB]; g++-11 amd64 11.4.0-1ubuntu1~22.04 [11.4 MB]
+# python ##E: Package 'python' has no installation candidate
+RUN apt-get -q update && \
+    apt-get -q -y install --no-install-recommends ca-certificates \
+      bc build-essential cpio file git unzip rsync wget curl \
+      syslinux syslinux-common isolinux xorriso dosfstools mtools && \
+    wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
+    wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+    dpkg -i "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
+    dpkg -i "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+    rm -f "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
+    rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+    apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
+
 
 # Setup environment
 ENV SRC_DIR=/build \
