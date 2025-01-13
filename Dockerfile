@@ -1,19 +1,23 @@
-FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest as brdata
+# FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest as brdata
+FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501 as brdata
 # FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
 # FROM ailispaw/ubuntu-essential:16.04-nodoc
-FROM ubuntu:22.04
+# FROM ubuntu:22.04
+FROM registry.cn-shenzhen.aliyuncs.com/infrasync/library-ubuntu:24.04
 
 ENV TERM=xterm \
-    SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
+    # SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
+    SYSLINUX_SITE=https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08 \
     SYSLINUX_VERSION=4.05+dfsg-6+deb8u1
 
+# jammy> noble
 RUN \
   #domain="mirrors.aliyun.com" \
   domain="mirrors.ustc.edu.cn" \
- && echo "deb http://$domain/ubuntu jammy main restricted universe multiverse" > /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu jammy-security main restricted universe multiverse" >> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu jammy-updates main restricted universe multiverse">> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu jammy-backports main restricted universe multiverse">> /etc/apt/sources.list
+ && echo "deb http://$domain/ubuntu noble main restricted universe multiverse" > /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu noble-security main restricted universe multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu noble-updates main restricted universe multiverse">> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu noble-backports main restricted universe multiverse">> /etc/apt/sources.list
 
 # ubt16: gcc7?
 # ubt22: gcc-11 amd64 11.4.0-1ubuntu1~22.04 [20.1 MB]; g++-11 amd64 11.4.0-1ubuntu1~22.04 [11.4 MB]
@@ -22,19 +26,26 @@ RUN apt-get -q update && \
     apt-get -q -y install --no-install-recommends ca-certificates \
       bc build-essential cpio file git unzip rsync wget curl \
       syslinux syslinux-common isolinux xorriso dosfstools mtools && \
-    wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-    wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-    dpkg -i "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-    dpkg -i "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-    rm -f "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-    rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
-    apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
+      apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
 
+# wget -q https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux/syslinux-common_4.05+dfsg-6+deb8u1_all.deb 
+# wget -q https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux/syslinux_4.05+dfsg-6+deb8u1_amd64.deb
+RUN export SYSLINUX_VERSION2=$(echo $SYSLINUX_VERSION |sed "s/+/%20/g") SYSLINUX_VERSION=$(echo $SYSLINUX_VERSION |sed "s/+/ /g") && \
+      # https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/syslinux_4.05%20dfsg-6%20deb8u1_amd64.deb
+      wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION2}_all.deb" && \
+      wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION2}_amd64.deb" && \
+      dpkg -i "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
+      dpkg -i "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+      rm -f "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
+      rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+      apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
 
 # Setup environment
+# ubt2404: configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)
 ENV SRC_DIR=/build \
     OVERLAY=/overlay \
-    BR_ROOT=/build/buildroot
+    BR_ROOT=/build/buildroot \
+    FORCE_UNSAFE_CONFIGURE=1
 RUN mkdir -p ${SRC_DIR} ${OVERLAY}
 
 # ENV BR_VERSION 2019.08
