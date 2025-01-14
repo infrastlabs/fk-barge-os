@@ -11,7 +11,7 @@ echo "${DOCKER_REGISTRY_PW_infrastSubUser2}" |docker login --username=${DOCKER_R
 ns=infrastlabs
 ver=v5
 
-img="barge-build-output:v2501" #latest
+img="barge-build-output:v2501-br2002-k54" #latest
 
 #buildx
 # plat="--platform linux/amd64,linux/arm64" #,linux/arm
