@@ -9,82 +9,6 @@
   - https://bootlin.com/doc/training/buildroot/buildroot-slides.pdf
   - https://bootlin.com/doc/training/buildroot/buildroot-labs.pdf
 
-```bash
-headless @ barge in .../working/_ee |17:26:34  
-$ git clone --branch=2024.02.10 --depth=1  https://gitee.com/g-system/fk-buildroot 
-$ git clone https://gitee.com/g-system/fk-barge-os
-# headless @ barge in .../_ee/fk-buildroot |18:03:08  |tag:2024.02.10 ?:4 _| 
-$ cd fk-buildroot/
-$ cp ../fk-barge-os/configs/buildroot.config .config
-# headless @ barge in .../_ee/fk-buildroot |18:02:45  |tag:2024.02.10 ?:4 _| 
-$ sudo apt install  libncurses-dev
-$ make menuconfig #手动save 
-
-headless @ barge in .../_ee/fk-buildroot |18:02:38  |tag:2024.02.10 ?:4 _| 
-$ ls -lha
-total 1.9M
--rw-r--r--    1 headless headless 101K Jan 13 17:29 .config
--rw-r--r--    1 headless headless 133K Jan 13 17:38 .config-2s
--rw-r--r--    1 headless headless 129K Jan 13 18:02 .config-2s2
--rw-r--r--    1 headless headless 129K Jan 13 18:02 .config-2s2.old
-
-# gitac-build
-  >>> linux 5.10.162-cip24 Installing to target
-  >>> linux 5.10.162-cip24 Installing to images directory
-  >>>   Finalizing host directory
-  >>>   Finalizing target directory
-  >>>   Sanitizing RPATH in target tree
-  >>>   Copying overlay /overlay
-  >>>   Executing post-build script /build/scripts/post_build.sh
-  /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_ABI_DT_RELR' not found (required by /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef)
-  /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_2.38' not found (required by /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef)
-  make: *** [Makefile:752: target-finalize] Error 1
-  make: *** [Makefile:27: build] Error 2
-
-# conf02
-  # Copy config files
-  COPY configs ${SRC_DIR}/configs
-  RUN cp ${SRC_DIR}/configs/buildroot.config ${BR_ROOT}/.config && \
-  cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
-  ##@buildroot.config: BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox.config"
-  ##@buildroot.config: BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="/build/configs/kernel.config"
-
-# output
-  root @ deb1013 in ~ |09:16:22  
-  $ docker pull registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501
-  v2501: Pulling from infrastlabs/barge-build-output
-  72cfd02ff4d0: Already exists 
-  ab4cae77f3d3: Downloading [======================================>            ]  828.8MB/1.066GB
-  root @ deb1013 in ~ |09:17:36  
-  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501 sh
-  / # find output/
-  output/
-  output/bzImage
-  output/rootfs.tar.xz
-  output/brdata.tar.gz
-  output/barge.iso
-  / # ls -lh output/
-  total 1017M  
-  -rw-r--r--    1 root     root       48.0M Jan 13 23:49 barge.iso
-  -rw-r--r--    1 root     root      920.0M Jan 13 23:49 brdata.tar.gz
-  -rw-r--r--    1 root     root        3.1M Jan 13 23:45 bzImage
-  -rw-r--r--    1 root     root       45.5M Jan 13 23:47 rootfs.tar.xz  
-
-# GLIBC_2.38| usr/bin/localedef --force --quiet --no-archive --little-endian --prefix=${ROOTFS} -i POSIX -f UTF-8 C.UTF-8
-# /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found
-  root @ deb1013 in ~ |09:35:00  
-  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-24.04 bash
-  root@7c18ee39dbea:/# pkgsize |grep libc
-  2.13 Mbs	libc-bin|2.39-0ubuntu8.3
-
-  root @ deb1013 in ~ |09:36:52  
-  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-22.04 bash
-  root@7c99bbc7fb18:/# pkgsize |grep libc
-  2.48 Mbs	libc-bin ##22.04:无version!!
-  root@7c99bbc7fb18:/# dpkg -l |grep libc-bin
-  ii  libc-bin                      2.35-0ubuntu3.8                         amd64        GNU C Library: Binaries
-```
-
 **configs**
 
 ref draft//2025\03-bargeos-initrd-kernel.md
@@ -123,7 +47,13 @@ k3s-root: buildroot, package, patches, scripts
 cirros: conf, lxd-meta, patches-buildroot, src[rootfs]
 fos: configs, patch, Buildroot/{board,package}
 
+```
 
+## 附
+
+### 1）args
+
+```bash
 ####################################
 # Barge.FORKS
 # https://github.com/ahmedbodi/barge-os/commit/d40763f7389468fb6ae3acf6ba7b9f01c904f382#diff-43453f510556d352276e897e137cb103b3bbca24acb6cba33208d4887b2e3c77R73
@@ -218,3 +148,94 @@ function buildKernel() {
 
 ```
 
+
+### 2）buildroot构建<buildroot.config更新>
+
+```bash
+# 40.253-vmbarge:
+headless @ barge in .../working/_ee |17:26:34  
+  $ git clone --branch=2024.02.10 --depth=1  https://gitee.com/g-system/fk-buildroot 
+  $ git clone https://gitee.com/g-system/fk-barge-os
+  # headless @ barge in .../_ee/fk-buildroot |18:03:08  |tag:2024.02.10 ?:4 _| 
+  $ cd fk-buildroot/
+  $ cp ../fk-barge-os/configs/buildroot.config .config
+  # headless @ barge in .../_ee/fk-buildroot |18:02:45  |tag:2024.02.10 ?:4 _| 
+  $ sudo apt install  libncurses-dev
+  $ make menuconfig #手动save 
+
+  headless @ barge in .../_ee/fk-buildroot |18:02:38  |tag:2024.02.10 ?:4 _| 
+  $ ls -lha
+  total 1.9M
+  -rw-r--r--    1 headless headless 101K Jan 13 17:29 .config
+  -rw-r--r--    1 headless headless 133K Jan 13 17:38 .config-2s
+  -rw-r--r--    1 headless headless 129K Jan 13 18:02 .config-2s2
+  -rw-r--r--    1 headless headless 129K Jan 13 18:02 .config-2s2.old
+
+# gitac-build
+  >>> linux 5.10.162-cip24 Installing to target
+  >>> linux 5.10.162-cip24 Installing to images directory
+  >>>   Finalizing host directory
+  >>>   Finalizing target directory
+  >>>   Sanitizing RPATH in target tree
+  >>>   Copying overlay /overlay
+  >>>   Executing post-build script /build/scripts/post_build.sh
+  /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_ABI_DT_RELR' not found (required by /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef)
+  /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version 'GLIBC_2.38' not found (required by /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef)
+  make: *** [Makefile:752: target-finalize] Error 1
+  make: *** [Makefile:27: build] Error 2
+
+# conf02
+  # Copy config files
+  COPY configs ${SRC_DIR}/configs
+  RUN cp ${SRC_DIR}/configs/buildroot.config ${BR_ROOT}/.config && \
+  cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
+  ##@buildroot.config: BR2_PACKAGE_BUSYBOX_CONFIG="package/busybox/busybox.config"
+  ##@buildroot.config: BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="/build/configs/kernel.config"
+
+# output
+  root @ deb1013 in ~ |09:16:22  
+  $ docker pull registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501
+  v2501: Pulling from infrastlabs/barge-build-output
+  72cfd02ff4d0: Already exists 
+  ab4cae77f3d3: Downloading [======================================>            ]  828.8MB/1.066GB
+  root @ deb1013 in ~ |09:17:36  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501 sh
+  / # find output/
+  output/
+  output/bzImage
+  output/rootfs.tar.xz
+  output/brdata.tar.gz
+  output/barge.iso
+  / # ls -lh output/
+  total 1017M  
+  -rw-r--r--    1 root     root       48.0M Jan 13 23:49 barge.iso
+  -rw-r--r--    1 root     root      920.0M Jan 13 23:49 brdata.tar.gz
+  -rw-r--r--    1 root     root        3.1M Jan 13 23:45 bzImage
+  -rw-r--r--    1 root     root       45.5M Jan 13 23:47 rootfs.tar.xz  
+
+# ubt22>24即解决
+# GLIBC_2.38| usr/bin/localedef --force --quiet --no-archive --little-endian --prefix=${ROOTFS} -i POSIX -f UTF-8 C.UTF-8
+# /build/buildroot/output/target/../host/x86_64-buildroot-linux-gnu/sysroot/usr/bin/localedef: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found
+  root @ deb1013 in ~ |09:35:00  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-24.04 bash
+  root@7c18ee39dbea:/# pkgsize |grep libc
+  2.13 Mbs	libc-bin|2.39-0ubuntu8.3
+
+  root @ deb1013 in ~ |09:36:52  
+  $ docker run -it --rm registry.cn-shenzhen.aliyuncs.com/infrastlabs/x11-base:core-ubuntu-22.04 bash
+  root@7c99bbc7fb18:/# pkgsize |grep libc
+  2.48 Mbs	libc-bin ##22.04:无version!!
+  root@7c99bbc7fb18:/# dpkg -l |grep libc-bin
+  ii  libc-bin                      2.35-0ubuntu3.8                         amd64        GNU C Library: Binaries
+
+
+##换回BR2019.08##################################
+# kernel: 5.2/v4.19.65-cip8/cust-version
+git clone --branch=2019.08 --depth=1  https://gitee.com/g-system/fk-buildroot fk-buildroot-19.08
+  4841  2025-01-15 07:13:16 cd fk-buildroot-19.08/
+  4842  2025-01-15 07:14:16 wget https://gitee.com/g-system/fk-barge-os/raw/sam-custom/configs/buildroot.config
+  4843  2025-01-15 07:14:28 cat buildroot.config > .config
+  4844  2025-01-15 07:14:32 make menuconfig
+  4845  2025-01-15 07:19:50 ll
+  4846  2025-01-15 07:19:59 sz .config-br19-
+```
