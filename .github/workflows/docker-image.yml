@@ -25,6 +25,7 @@ jobs:
           
           # BUILD
           # echo core; cd ubt-core; sh buildx.sh #compile
+          make clean;
           make;
       - name: Call buildx.sh(build with ali's cache, push)
         run: |
