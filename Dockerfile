@@ -8,6 +8,7 @@ FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501-br20
 # FROM ailispaw/ubuntu-essential:16.04-nodoc
 # FROM ubuntu:16.04
 FROM registry.cn-shenzhen.aliyuncs.com/infrasync/library-ubuntu:16.04
+ARG TARGETPLATFORM
 # ARG VER=20.04
 ARG VER=16.04
 
@@ -18,8 +19,8 @@ ENV TERM=xterm \
 
 # jammy> noble; xenial
 RUN \
-  #domain="mirrors.aliyun.com"; \
-  domain="mirrors.ustc.edu.cn"; \
+  #export DOMAIN="mirrors.aliyun.com"; \
+  export DOMAIN="mirrors.ustc.edu.cn"; \
   case ${VER} in \
     "14.04")  V2=trusty  ;; \
     "16.04")  V2=xenial  ;; \
@@ -28,10 +29,11 @@ RUN \
     "22.04")  V2=jammy   ;; \
     "24.04")  V2=noble   ;; \
   esac; \
- echo "deb http://$domain/ubuntu ${V2} main restricted universe multiverse" > /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu ${V2}-security main restricted universe multiverse" >> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu ${V2}-updates main restricted universe multiverse">> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu ${V2}-backports main restricted universe multiverse">> /etc/apt/sources.list; \
+  test -z "$(echo $TARGETPLATFORM |grep arm)" && target=ubuntu || target=ubuntu-ports; \
+ echo "deb http://${DOMAIN}/$target ${V2} main restricted universe multiverse" > /etc/apt/sources.list \
+ && echo "deb http://${DOMAIN}/$target ${V2}-security main restricted universe multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://${DOMAIN}/$target ${V2}-updates main restricted universe multiverse">> /etc/apt/sources.list \
+ && echo "deb http://${DOMAIN}/$target ${V2}-backports main restricted universe multiverse">> /etc/apt/sources.list; \
  echo 'apt update -qq && apt install -yq --no-install-recommends $@ && apt clean; rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/cache/debconf/* /var/log/*; ' > /usr/local/bin/apt.sh \
     && chmod +x /usr/local/bin/apt.sh; 
 
@@ -54,14 +56,24 @@ RUN apt-get -q update && \
 # wget -q https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux/syslinux_4.05+dfsg-6+deb8u1_amd64.deb
 RUN \
     export SYSLINUX_VERSION2="$(echo $SYSLINUX_VERSION |sed "s/+/%20/g")" && \
-    export SYSLINUX_VERSION="$(echo $SYSLINUX_VERSION |sed "s/+/ /g")" && \
-      # https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/syslinux_4.05%20dfsg-6%20deb8u1_amd64.deb
+    export SYSLINUX_VERSION="$(echo $SYSLINUX_VERSION |sed "s/+/ /g")"; \
+    # https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/syslinux_4.05%20dfsg-6%20deb8u1_amd64.deb
+    # arm64> amd64: none_arm64..(404);
+    case ${TARGETPLATFORM} in \
+      "linux/amd64")  arch=amd64    ;; \
+      "linux/arm64")  arch=amd64     ;; \
+      "linux/arm/v7") arch=armv7   ;; \
+      "linux/arm/v6") arch=NONE_ARMv6   ;; \
+      "linux/386")    arch=NONE_i386 ;; \
+      *) arch=amd64 ;; \
+    esac; \
+      echo ${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION2}_$arch.deb; \
       wget -q "${SYSLINUX_SITE}/syslinux-common_${SYSLINUX_VERSION2}_all.deb" && \
-      wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION2}_amd64.deb" && \
+      wget -q "${SYSLINUX_SITE}/syslinux_${SYSLINUX_VERSION2}_$arch.deb" && \
       dpkg -i "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-      dpkg -i "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+      dpkg -i "syslinux_${SYSLINUX_VERSION}_$arch.deb" && \
       rm -f "syslinux-common_${SYSLINUX_VERSION}_all.deb" && \
-      rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
+      rm -f "syslinux_${SYSLINUX_VERSION}_$arch.deb" && \
       apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
 
 ##################################################################
@@ -146,13 +158,13 @@ RUN mkdir -p usr/bin && \
     wget -qO usr/bin/pkg https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/barge_pkg && \
     chmod +x usr/bin/pkg
 
+COPY --from=brdata /output/brdata.tar.gz /output_brdata.tar.gz
 # Copy config files
 COPY configs ${SRC_DIR}/configs
 RUN cp ${SRC_DIR}/configs/buildroot.config ${BR_ROOT}/.config && \
     cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
 
 COPY scripts ${SRC_DIR}/scripts
-COPY --from=brdata /output/brdata.tar.gz /output_brdata.tar.gz
 
 VOLUME ${BR_ROOT}/dl ${BR_ROOT}/ccache
 
