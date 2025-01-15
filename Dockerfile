@@ -1,10 +1,15 @@
-FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest as brdata
+# FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:latest as brdata
 # FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501 as brdata
+# v2501-br201908-k54{clean by scripts/build.sh's non-cp}> v2501-br2002-k54
+FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-output:v2501-br2002-k54 as brdata
 # FROM ubuntu:22.04
+# FROM ubuntu:24.04
 # FROM registry.cn-shenzhen.aliyuncs.com/infrasync/library-ubuntu:24.04
-FROM ailispaw/ubuntu-essential:16.04-nodoc
-# FROM ubuntu:16.04 ##Makefile.legacy:9: *** "You have legacy configuration in your .config! Please check your configuration.".
-# FROM registry.cn-shenzhen.aliyuncs.com/infrasync/library-ubuntu:16.04 #NONE?
+# FROM ailispaw/ubuntu-essential:16.04-nodoc
+# FROM ubuntu:16.04
+FROM registry.cn-shenzhen.aliyuncs.com/infrasync/library-ubuntu:16.04
+# ARG VER=20.04
+ARG VER=16.04
 
 ENV TERM=xterm \
     # SYSLINUX_SITE=https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux \
@@ -13,21 +18,37 @@ ENV TERM=xterm \
 
 # jammy> noble; xenial
 RUN \
-  #domain="mirrors.aliyun.com" \
-  domain="mirrors.ustc.edu.cn" \
- && echo "deb http://$domain/ubuntu xenial main restricted universe multiverse" > /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu xenial-security main restricted universe multiverse" >> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu xenial-updates main restricted universe multiverse">> /etc/apt/sources.list \
- && echo "deb http://$domain/ubuntu xenial-backports main restricted universe multiverse">> /etc/apt/sources.list
+  #domain="mirrors.aliyun.com"; \
+  domain="mirrors.ustc.edu.cn"; \
+  case ${VER} in \
+    "14.04")  V2=trusty  ;; \
+    "16.04")  V2=xenial  ;; \
+    "18.04")  V2=bionic  ;; \
+    "20.04")  V2=focal   ;; \
+    "22.04")  V2=jammy   ;; \
+    "24.04")  V2=noble   ;; \
+  esac; \
+ echo "deb http://$domain/ubuntu ${V2} main restricted universe multiverse" > /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu ${V2}-security main restricted universe multiverse" >> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu ${V2}-updates main restricted universe multiverse">> /etc/apt/sources.list \
+ && echo "deb http://$domain/ubuntu ${V2}-backports main restricted universe multiverse">> /etc/apt/sources.list; \
+ echo 'apt update -qq && apt install -yq --no-install-recommends $@ && apt clean; rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/cache/debconf/* /var/log/*; ' > /usr/local/bin/apt.sh \
+    && chmod +x /usr/local/bin/apt.sh; 
 
 # ubt16: gcc7?
 # ubt22: gcc-11 amd64 11.4.0-1ubuntu1~22.04 [20.1 MB]; g++-11 amd64 11.4.0-1ubuntu1~22.04 [11.4 MB]
 # python ##E: Package 'python' has no installation candidate
+# ubt1604 without python:  make[1]: python3: Command not found @11min
 RUN apt-get -q update && \
-    apt-get -q -y install --no-install-recommends ca-certificates \
+    apt.sh ca-certificates \
       bc build-essential cpio file git unzip rsync wget curl \
-      syslinux syslinux-common isolinux xorriso dosfstools mtools && \
-      apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
+      syslinux syslinux-common isolinux xorriso dosfstools mtools; \
+    # test: ubt1604 err.
+    # export VER=${VER}; test "16.04" == "${VER}" && apt.sh python || echo "not-ubt1604, skip python";
+    case ${VER} in \
+      "16.04")  apt.sh python  ;; \
+      *)  echo "VER=${VER} not-ubt1604, skip python";   ;; \
+    esac;
 
 # wget -q https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux/syslinux-common_4.05+dfsg-6+deb8u1_all.deb 
 # wget -q https://mirrors.edge.kernel.org/ubuntu/pool/main/s/syslinux/syslinux_4.05+dfsg-6+deb8u1_amd64.deb
@@ -43,7 +64,8 @@ RUN \
       rm -f "syslinux_${SYSLINUX_VERSION}_amd64.deb" && \
       apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* /var/cache/debconf/* /var/log/*
 
-FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
+##################################################################
+# FROM registry.cn-shenzhen.aliyuncs.com/infrastlabs/barge-build-compiler-ubt1604:latest
 # Setup environment
 # ubt2404: configure: error: you should not run configure as root (set FORCE_UNSAFE_CONFIGURE=1 in environment to bypass this check)
 ENV SRC_DIR=/build \
@@ -60,7 +82,8 @@ RUN mkdir -p ${SRC_DIR} ${OVERLAY}
 # RUN tar -jxf buildroot-${BR_VERSION}.tar.bz2; \
 #     mv buildroot-${BR_VERSION} ${BR_ROOT}
 # ENV BR_VERSION 2024.02.10
-ENV BR_VERSION 2019.08
+# ENV BR_VERSION 2019.08
+ENV BR_VERSION 2020.02.12
 #  https://buildroot.org/downloads/buildroot-2024.02.10.tar.xz
 #  https://buildroot.org/downloads/buildroot-2024.02.10.tar.gz  ##bz2: last @buildroot-2021.11-rc3.tar.bz2
 #   buildroot-2024.02.tar.gz	2024-Mar-05 14:52:59	7.0M	application/x-gtar-compressed
@@ -71,11 +94,11 @@ RUN curl -O -fSL -k  https://buildroot.org/downloads/buildroot-${BR_VERSION}.tar
 RUN tar -zxf buildroot-${BR_VERSION}.tar.gz; \
     mv buildroot-${BR_VERSION} ${BR_ROOT}
 
-# Apply patches
-COPY patches ${SRC_DIR}/patches
-RUN for patch in ${SRC_DIR}/patches/*.patch; do \
-      patch -p1 -d ${BR_ROOT} < ${patch}; \
-    done
+# # Apply patches
+# COPY patches ${SRC_DIR}/patches
+# RUN for patch in ${SRC_DIR}/patches/*.patch; do \
+#       patch -p1 -d ${BR_ROOT} < ${patch}; \
+#     done
 
 # Setup overlay
 COPY overlay ${OVERLAY}
@@ -104,7 +127,8 @@ RUN mkdir -p usr/bin && \
     wget -qO usr/bin/dumb-init https://gitee.com/g-system/fk-barge-os/releases/download/master-2019-08/dumb-init_1.2.2_amd64 && \
     chmod +x usr/bin/dumb-init
 
-ENV VERSION 2.14.0-rc2
+# ENV VERSION 2.14.0-rc2
+ENV VERSION 2.14.1-2501
 RUN mkdir -p etc && \
     echo "Welcome to Barge ${VERSION}, Docker version ${DOCKER_VERSION}" > etc/motd && \
     echo "NAME=\"Barge\"" > etc/os-release && \
