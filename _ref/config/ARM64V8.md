@@ -128,17 +128,26 @@
       fi
 ```
 
-- try1
+- **try1**
 
 ```bash
 ###############
+# 40.252-docker-build:
 root @ deb1013 in .../_ee/fk-barge-os |07:30:32  |sam-custom ✓| 
-$ git pull; docker build -t b2 .
-$ docker run -it --rm b2
+  $ git pull; docker build -t b2 .
+  $ docker run -it --rm b2
+  # ref Makefile
+  # docker run --privileged -v $(DL_DIR):/build/buildroot/dl \
+  # 			-v $(CCACHE_DIR):/build/buildroot/ccache --name $(BUILD_CONTAINER) $(BUILD_IMAGE);
 
-# ref Makefile
-# docker run --privileged -v $(DL_DIR):/build/buildroot/dl \
-# 			-v $(CCACHE_DIR):/build/buildroot/ccache --name $(BUILD_CONTAINER) $(BUILD_IMAGE);
+# fk-barge-os\scripts\build_arm.sh
+  # 1. 拷贝configs/arm64/*.config;
+  # 2. make --quiet  ARCH=aarch64 -j $(nproc)
+
+  # >>> linux 5.4.289 Building
+  # scripts/extract-cert.c:21:25: fatal error: openssl/bio.h: No such file or directory
+  RUN apt.sh libssl-dev
+
 ```
 
 
