@@ -159,14 +159,24 @@ RUN mkdir -p usr/bin && \
     chmod +x usr/bin/pkg
 
 COPY --from=brdata /output/brdata.tar.gz /output_brdata.tar.gz
+# >>> linux 5.4.289 Building
+# scripts/extract-cert.c:21:25: fatal error: openssl/bio.h: No such file or directory
+RUN apt.sh libssl-dev
+
 # Copy config files
 COPY configs ${SRC_DIR}/configs
-RUN cp ${SRC_DIR}/configs/buildroot.config ${BR_ROOT}/.config && \
-    cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
+# RUN cp ${SRC_DIR}/configs/buildroot.config ${BR_ROOT}/.config && \
+#     cp ${SRC_DIR}/configs/busybox.config ${BR_ROOT}/package/busybox/busybox.config
 
 COPY scripts ${SRC_DIR}/scripts
+RUN chmod +x ${SRC_DIR}/scripts/*.sh
 
 VOLUME ${BR_ROOT}/dl ${BR_ROOT}/ccache
 
+# ENV SRC_DIR=/build \
+#     OVERLAY=/overlay \
+#     BR_ROOT=/build/buildroot
 WORKDIR ${BR_ROOT}
-CMD ["../scripts/build.sh"]
+# CMD ["../scripts/build.sh"]
+# RUN bash ${BR_ROOT}/../scripts/build_arm.sh
+CMD ["../scripts/build_arm.sh"]
