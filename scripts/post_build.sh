@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set +e
 
 ROOTFS=$1
 
@@ -31,6 +32,7 @@ rm -rf ./*/kernel/net/wireless/*
 # Strip kernel modules
 match1=$(ls ${ROOTFS}/lib/modules/ |grep aarch64)
 arch=x86_64; test ! -z "$match1" && arch=aarch64 || echo "none-aarch64"
+echo "arch: $arch"
 GNU_TARGET_NAME=$arch-buildroot-linux-gnu
 OBJCOPY=${GNU_TARGET_NAME}-objcopy
 find . -type f -name '*.ko' | xargs -n 1 ${OBJCOPY} --strip-unneeded
